@@ -8,7 +8,7 @@
 
 @implementation GeofencingPlugin {
   CLLocationManager *_locationManager;
-  FlutterHeadlessDartRunner *_headlessRunner;
+  FlutterEngine *_headlessRunner;
   FlutterMethodChannel *_callbackChannel;
   FlutterMethodChannel *_mainChannel;
   NSObject<FlutterPluginRegistrar> *_registrar;
@@ -141,7 +141,7 @@ static BOOL initialized = NO;
   [_locationManager requestAlwaysAuthorization];
   _locationManager.allowsBackgroundLocationUpdates = YES;
 
-  _headlessRunner = [[FlutterHeadlessDartRunner alloc] init];
+  _headlessRunner = [[FlutterEngine alloc] initWithName:@"geofencing_plugin" project:nil];
   _registrar = registrar;
 
   _mainChannel = [FlutterMethodChannel methodChannelWithName:@"plugins.flutter.io/geofencing_plugin"
@@ -161,7 +161,7 @@ static BOOL initialized = NO;
   NSAssert(info != nil, @"failed to find callback");
   NSString *entrypoint = info.callbackName;
   NSString *uri = info.callbackLibraryPath;
-  [_headlessRunner runWithEntrypointAndLibraryUri:entrypoint libraryUri:uri];
+  [_headlessRunner runWithEntrypoint:entrypoint libraryURI:uri];
   [_registrar addMethodCallDelegate:self channel:_callbackChannel];
 }
 
