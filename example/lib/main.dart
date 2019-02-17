@@ -49,7 +49,7 @@ class _MyAppState extends State<MyApp> {
     initPlatformState();
   }
 
-  static void callback(List<String> ids, Location l, GeofenceEvent e) async {
+  static void callback(List<String> ids, GLocation l, GeofenceEvent e) async {
     print('Fences: $ids Location $l Event: $e');
     final SendPort send =
         IsolateNameServer.lookupPortByName('geofencing_send_port');
