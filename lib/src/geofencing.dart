@@ -137,13 +137,20 @@ class GeofencingManager {
       GeofenceRegion region,
       void Function(List<String> id, GLocation location, GeofenceEvent event)
           callback) async {
+    if (callback == null) {
+      throw ArgumentError.notNull('callback');
+    }
     if (Platform.isIOS &&
         region.triggers.contains(GeofenceEvent.dwell) &&
         (region.triggers.length == 1)) {
       throw UnsupportedError("iOS does not support 'GeofenceEvent.dwell'");
     }
+    final CallbackHandle handle = PluginUtilities.getCallbackHandle(callback);
+    if (handle == null) {
+      throw ArgumentError.notNull('callback handle');
+    }    
     final List<dynamic> args = <dynamic>[
-      PluginUtilities.getCallbackHandle(callback).toRawHandle()
+      handle.toRawHandle()
     ];
     args.addAll(region._toArgs());
     await _channel.invokeMethod('GeofencingPlugin.registerGeofence', args);
