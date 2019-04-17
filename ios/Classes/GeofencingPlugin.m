@@ -122,7 +122,7 @@ static BOOL initialized = NO;
 
 - (void)sendLocationEvent:(CLRegion *)region eventType:(int)event {
   NSAssert([region isKindOfClass:[CLCircularRegion class]], @"region must be CLCircularRegion");
-  CLLocationCoordinate2D center = region.center;
+  CLLocationCoordinate2D center = [(CLCircularRegion *)region center];
   int64_t handle = [self getCallbackHandleForRegionId:region.identifier];
   [_callbackChannel
       invokeMethod:@""
@@ -216,17 +216,17 @@ static BOOL initialized = NO;
 }
 
 - (NSMutableDictionary *)getRegionCallbackMapping {
-  const NSString *key = kCallbackMapping;
+  NSString * const key = kCallbackMapping;
   NSMutableDictionary *callbackDict = [_persistentState dictionaryForKey:key];
   if (callbackDict == nil) {
-    callbackDict = @{};
+    callbackDict = [NSMutableDicationary dictionaryWithDictionary:@{}];
     [_persistentState setObject:callbackDict forKey:key];
   }
   return [callbackDict mutableCopy];
 }
 
 - (void)setRegionCallbackMapping:(NSMutableDictionary *)mapping {
-  const NSString *key = kCallbackMapping;
+  NSString * const key = kCallbackMapping;
   NSAssert(mapping != nil, @"mapping cannot be nil");
   [_persistentState setObject:mapping forKey:key];
 }
