@@ -216,7 +216,7 @@ static BOOL initialized = NO;
 }
 
 - (NSMutableDictionary *)getRegionCallbackMapping {
-  NSString * const key = kCallbackMapping;
+  NSString *key = kCallbackMapping;
   NSMutableDictionary *callbackDict = [_persistentState dictionaryForKey:key];
   if (callbackDict == nil) {
     callbackDict = [NSMutableDictionary dictionaryWithDictionary:@{}];
@@ -226,7 +226,7 @@ static BOOL initialized = NO;
 }
 
 - (void)setRegionCallbackMapping:(NSMutableDictionary *)mapping {
-  NSString * const key = kCallbackMapping;
+  NSString *key = kCallbackMapping;
   NSAssert(mapping != nil, @"mapping cannot be nil");
   [_persistentState setObject:mapping forKey:key];
 }
