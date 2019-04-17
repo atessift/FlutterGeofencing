@@ -219,7 +219,7 @@ static BOOL initialized = NO;
   NSString * const key = kCallbackMapping;
   NSMutableDictionary *callbackDict = [_persistentState dictionaryForKey:key];
   if (callbackDict == nil) {
-    callbackDict = [NSMutableDicationary dictionaryWithDictionary:@{}];
+    callbackDict = [NSMutableDictionary dictionaryWithDictionary:@{}];
     [_persistentState setObject:callbackDict forKey:key];
   }
   return [callbackDict mutableCopy];
