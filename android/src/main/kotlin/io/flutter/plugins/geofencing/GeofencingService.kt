@@ -45,6 +45,7 @@ class GeofencingService : MethodCallHandler, JobIntentService() {
 
         @JvmStatic
         fun enqueueWork(context: Context, work: Intent) {
+            Log.i(TAG, "Enqueing work");
             enqueueWork(context, GeofencingService::class.java, JOB_ID, work)
         }
 
@@ -98,9 +99,11 @@ class GeofencingService : MethodCallHandler, JobIntentService() {
                 }
             }
             "GeofencingService.promoteToForeground" -> {
+                Log.i(TAG, "Promoting to foreground service")
                 mContext.startForegroundService(Intent(mContext, IsolateHolderService::class.java))
             }
             "GeofencingService.demoteToBackground" -> {
+                Log.i(TAG, "Demoting to background service")
                 val intent = Intent(mContext, IsolateHolderService::class.java)
                 intent.setAction(IsolateHolderService.ACTION_SHUTDOWN)
                 mContext.startForegroundService(intent)
