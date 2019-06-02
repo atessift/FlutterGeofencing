@@ -9,6 +9,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.app.PendingIntent
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
@@ -45,10 +46,18 @@ class IsolateHolderService : Service() {
         val imageId = getResources().getIdentifier("ic_launcher", "mipmap", getPackageName())
 
         (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(channel)
+
+        val mainActivityClass = Class.forName("com.example.frontend.MainActivity")
+        val contentIntent = Intent(this, mainActivityClass).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+        val pendingContentIntent : PendingIntent = PendingIntent.getActivity(this, 0, contentIntent, 0)
+
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Lumie")
                 .setContentText("Tap to control your lights")
                 .setSmallIcon(imageId)
+                .setContentIntent(pendingContentIntent)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .build()
 
