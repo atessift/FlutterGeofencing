@@ -16,6 +16,7 @@ geofencing:
     android:enabled="true" android:exported="true"/>
 <service android:name="io.flutter.plugins.geofencing.GeofencingService"
     android:permission="android.permission.BIND_JOB_SERVICE" android:exported="true"/>
+<service android:name="io.flutter.plugins.geofencing.IsolateHolderService"/>
 ```
 
 Also request the correct permissions for geofencing:
