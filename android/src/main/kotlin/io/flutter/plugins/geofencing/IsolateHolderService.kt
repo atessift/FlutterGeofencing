@@ -33,7 +33,7 @@ class IsolateHolderService : Service() {
         }
     }
 
-    override fun onBind(p0: Intent) : IBinder? {
+    override fun onBind(p0: Intent!) : IBinder? {
         return null;
     }
 
@@ -70,8 +70,8 @@ class IsolateHolderService : Service() {
         startForeground(1, notification)
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int) : Int {
-        if (intent.getAction() == ACTION_SHUTDOWN) {
+    override fun onStartCommand(intent: Intent!, flags: Int, startId: Int) : Int {
+        if (intent?.getAction() == ACTION_SHUTDOWN) {
             (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
                 newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK_TAG).apply {
                     if (isHeld()) {
