@@ -6,3 +6,9 @@
 pubspec.lock
 
 build/
+android/.idea
+
+android/build.gradle
+android/gradlew
+android/gradlew.bat
+android/gradle/wrapper
