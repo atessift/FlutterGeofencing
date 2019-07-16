@@ -12,6 +12,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
+import android.os.Handler
+import android.os.Looper
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingClient
 import com.google.android.gms.location.GeofencingRequest
@@ -107,7 +109,9 @@ class GeofencingPlugin(context: Context, activity: Activity?) : MethodCallHandle
                             == PackageManager.PERMISSION_DENIED)) {
                 val msg = "'registerGeofence' requires the ACCESS_FINE_LOCATION permission."
                 Log.w(TAG, msg)
-                result?.error(msg, null, null)
+                Handler(Looper.getMainLooper()).post(Runnable { // make sure to return result on main UIThread
+                    result?.error(msg, null, null)
+                })
             }
             geofencingClient.addGeofences(getGeofencingRequest(geofence, initialTriggers),
                     getGeofencePendingIndent(context, callbackHandle))?.run {
@@ -116,11 +120,15 @@ class GeofencingPlugin(context: Context, activity: Activity?) : MethodCallHandle
                     if (cache) {
                         addGeofenceToCache(context, id, args)
                     }
-                    result?.success(true)
+                    Handler(Looper.getMainLooper()).post(Runnable { // make sure to return result on main UIThread
+                        result?.success(true)
+                    })
                 }
                 addOnFailureListener {
                     Log.e(TAG, "Failed to add geofence: $it")
-                    result?.error(it.toString(), null, null)
+                    Handler(Looper.getMainLooper()).post(Runnable { // make sure to return result on main UIThread
+                        result?.error(it.toString(), null, null)
+                    })
                 }
             }
         }
@@ -154,9 +162,9 @@ class GeofencingPlugin(context: Context, activity: Activity?) : MethodCallHandle
                     .putLong(CALLBACK_DISPATCHER_HANDLE_KEY, callbackHandle)
                     .apply()
 
-            Log.d(TAG, "Starting as a foreground service")
-            var componentName = context.startForegroundService(Intent(context, IsolateHolderService::class.java))
-            Log.d(TAG, "Foreground service: " + componentName.flattenToString())
+            //Log.d(TAG, "Starting as a foreground service")
+            //var componentName = context.startForegroundService(Intent(context, IsolateHolderService::class.java))
+            //Log.d(TAG, "Foreground service: " + componentName.flattenToString())
 
         }
 
@@ -183,13 +191,17 @@ class GeofencingPlugin(context: Context, activity: Activity?) : MethodCallHandle
             val ids = listOf(args!![0] as String)
             geofencingClient.removeGeofences(ids).run {
                 addOnSuccessListener {
-                    result.success(true)
+                    Handler(Looper.getMainLooper()).post(Runnable { // make sure to return result on main UIThread
+                        result.success(true)
+                    })
                     for (id in ids) {
                         removeGeofenceFromCache(context, id)
                     }
                 }
                 addOnFailureListener {
-                    result.error(it.toString(), null, null)
+                    Handler(Looper.getMainLooper()).post(Runnable { // make sure to return result on main UIThread
+                        result.error(it.toString(), null, null)
+                    })
                 }
             }
         }
@@ -224,7 +236,9 @@ class GeofencingPlugin(context: Context, activity: Activity?) : MethodCallHandle
                     mActivity?.requestPermissions(REQUIRED_PERMISSIONS, 12312)
                 }
                 initializeService(mContext, args)
-                result.success(true)
+                mActivity?.runOnUiThread { // make sure to return result on main UIThread
+                    result.success(true)
+                }
             }
             "GeofencingPlugin.registerGeofence" -> registerGeofence(mContext,
                                                                     mGeofencingClient,
@@ -235,7 +249,9 @@ class GeofencingPlugin(context: Context, activity: Activity?) : MethodCallHandle
                                                                 mGeofencingClient,
                                                                 args,
                                                                 result)
-            else -> result.notImplemented()
+            else -> mActivity?.runOnUiThread { // make sure to return result on main UIThread
+                result.notImplemented()
+            }
         }
     }
 }
