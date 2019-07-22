@@ -113,16 +113,18 @@ class GeofencingManager {
   ///
   /// Will throw an exception if called anywhere except for a geofencing
   /// callback.
-  static Future<void> promoteToForeground() async =>
-      await _background.invokeMethod('GeofencingService.promoteToForeground');
+  static Future<void> promoteToForeground() async {
+    await _background.invokeMethod('GeofencingService.promoteToForeground');
+  }
 
   /// Demote the geofencing service from a foreground service to a background
   /// service.
   ///
   /// Will throw an exception if called anywhere except for a geofencing
   /// callback.
-  static Future<void> demoteToBackground() async =>
-      await _background.invokeMethod('GeofencingService.demoteToBackground');
+  static Future<void> demoteToBackground() async {
+    await _background.invokeMethod('GeofencingService.demoteToBackground');
+  }
 
   /// Register for geofence events for a [GeofenceRegion].
   ///
@@ -148,20 +150,23 @@ class GeofencingManager {
     final CallbackHandle handle = PluginUtilities.getCallbackHandle(callback);
     if (handle == null) {
       throw ArgumentError.notNull('callback handle');
-    }    
-    final List<dynamic> args = <dynamic>[
-      handle.toRawHandle()
-    ];
+    }
+    final List<dynamic> args = <dynamic>[handle.toRawHandle()];
     args.addAll(region._toArgs());
     await _channel.invokeMethod('GeofencingPlugin.registerGeofence', args);
   }
 
   /// Stop receiving geofence events for a given [GeofenceRegion].
-  static Future<bool> removeGeofence(GeofenceRegion region) async =>
-      (region == null) ? false : await removeGeofenceById(region.id);
+  static Future<bool> removeGeofence(GeofenceRegion region) async {
+    bool value = (region == null) ? false : await removeGeofenceById(region.id);
+    return value;
+  }
 
   /// Stop receiving geofence events for an identifier associated with a
   /// geofence region.
-  static Future<bool> removeGeofenceById(String id) async => await _channel
-      .invokeMethod('GeofencingPlugin.removeGeofence', <dynamic>[id]);
+  static Future<bool> removeGeofenceById(String id) async {
+    bool value = await _channel
+        .invokeMethod('GeofencingPlugin.removeGeofence', <dynamic>[id]);
+    return value;
+  }
 }
