@@ -138,7 +138,6 @@ static BOOL initialized = NO;
   _eventQueue = [[NSMutableArray alloc] init];
   _locationManager = [[CLLocationManager alloc] init];
   [_locationManager setDelegate:self];
-  [_locationManager requestAlwaysAuthorization];
   _locationManager.allowsBackgroundLocationUpdates = YES;
 
   _headlessRunner = [[FlutterEngine alloc] initWithName:@"GeofencingIsolate" project:nil allowHeadlessExecution:YES];
@@ -172,6 +171,7 @@ static BOOL initialized = NO;
 }
 
 - (void)registerGeofence:(NSArray *)arguments {
+  [_locationManager requestAlwaysAuthorization];
   int64_t callbackHandle = [arguments[0] longLongValue];
   NSString *identifier = arguments[1];
   double latitude = [arguments[2] doubleValue];
