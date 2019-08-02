@@ -116,6 +116,43 @@ static BOOL initialized = NO;
 - (void)locationManager:(CLLocationManager *)manager
     monitoringDidFailForRegion:(CLRegion *)region
                      withError:(NSError *)error {
+  NSLog(@"monitoringDidFailForRegion %@ %@",region, error.localizedDescription);
+  for (CLRegion *monitoredRegion in manager.monitoredRegions) {
+    NSLog(@"monitoredRegion: %@", monitoredRegion);
+  }
+  if ((error.domain != kCLErrorDomain || error.code != 5) &&
+      [manager.monitoredRegions containsObject:region]) {
+    NSString *message = [NSString stringWithFormat:@"%@ %@",
+                         region, error.localizedDescription];
+    NSLog(@"monitoringDifFailForRegion %@", message);
+  }
+}
+
+- (void)locationManager:(CLLocationManager *)manager didDetermineState:(CLRegionState)state forRegion:(CLRegion *)region {
+  if (state == CLRegionStateUnknown) {
+    return;
+  }
+  
+  int eventType = kExitEvent;
+  
+  if (state == CLRegionStateInside) eventType = kEnterEvent;
+  if (state == CLRegionStateOutside) eventType = kExitEvent;
+  
+  @synchronized(self) {
+    if (initialized) {
+      [self sendLocationEvent:region eventType:eventType];
+    } else {
+      NSDictionary *dict = @{
+                             kRegionKey: region,
+                             kEventType: @(eventType)
+                             };
+      [_eventQueue addObject:dict];
+    }
+  }
+}
+
+- (void)locationManager:(CLLocationManager *)manager didStartMonitoringForRegion:(CLRegion *)region {
+    
 }
 
 #pragma mark GeofencingPlugin Methods
@@ -136,9 +173,13 @@ static BOOL initialized = NO;
   NSAssert(self, @"super init cannot be nil");
   _persistentState = [NSUserDefaults standardUserDefaults];
   _eventQueue = [[NSMutableArray alloc] init];
+  
   _locationManager = [[CLLocationManager alloc] init];
   [_locationManager setDelegate:self];
-  _locationManager.allowsBackgroundLocationUpdates = YES;
+  _locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+  
+  // Only required for UIBackgroundModes location, and we don't use that.
+  //_locationManager.allowsBackgroundLocationUpdates = YES;
 
   _headlessRunner = [[FlutterEngine alloc] initWithName:@"GeofencingIsolate" project:nil allowHeadlessExecution:YES];
   _registrar = registrar;
@@ -171,12 +212,32 @@ static BOOL initialized = NO;
 }
 
 - (void)registerGeofence:(NSArray *)arguments {
-  [_locationManager requestAlwaysAuthorization];
+  if(![CLLocationManager locationServicesEnabled]) {
+    //You need to enable Location Services
+    NSLog(@"locationManager monitoring is not enabled");
+    return;
+  }
+  if(![CLLocationManager isMonitoringAvailableForClass:[CLRegion class]]) {
+    //Region monitoring is not available for this Class;
+    NSLog(@"locationManager monitoring is not available");
+    return;
+  }
+  if([CLLocationManager authorizationStatus] == kCLAuthorizationStatusDenied ||
+     [CLLocationManager authorizationStatus] == kCLAuthorizationStatusRestricted  ) {
+    NSLog(@"locationManager requesting authorization");
+    [_locationManager requestAlwaysAuthorization];
+  }
+  
   int64_t callbackHandle = [arguments[0] longLongValue];
   NSString *identifier = arguments[1];
   double latitude = [arguments[2] doubleValue];
   double longitude = [arguments[3] doubleValue];
   double radius = [arguments[4] doubleValue];
+  
+  if (radius > _locationManager.maximumRegionMonitoringDistance) {
+    radius = _locationManager.maximumRegionMonitoringDistance;
+  }
+  
   int64_t triggerMask = [arguments[5] longLongValue];
 
   CLCircularRegion *region =
@@ -187,7 +248,9 @@ static BOOL initialized = NO;
   region.notifyOnExit = ((triggerMask & 0x2) != 0);
   
   [self setCallbackHandleForRegionId:callbackHandle regionId:identifier];
+  
   [self->_locationManager startMonitoringForRegion:region];
+  [self->_locationManager requestStateForRegion:region];
 }
 
 - (BOOL)removeGeofence:(NSArray *)arguments {
