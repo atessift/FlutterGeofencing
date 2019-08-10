@@ -12,8 +12,12 @@ import android.util.Log;
 class GeofencingRebootBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
-            Log.e("GeofencingRebootBroadcastReceiver", "Reregistering geofences!")
+            Log.e("GeofencingRebootBroadcastReceiver", "Reboot - Reregistering geofences!")
             GeofencingPlugin.reRegisterAfterReboot(context)
         }
+        if (intent.getAction().equals("android.intent.action.MY_PACKAGE_REPLACED")) {
+            Log.e("GeofencingRebootBroadcastReceiver", "Upgrade - Reregistering geofences!")
+            GeofencingPlugin.reRegisterAfterReboot(context)
+        }   
     }
 }
